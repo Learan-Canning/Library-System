@@ -55,7 +55,90 @@ public class Library {
         }
     }
 
-    // Temporary getters so you can test loading
+    public void saveBooks() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("books.csv"))) {
+            for (Book b : books) {
+                writer.write(b.toCSV());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving books: " + e.getMessage());
+        }
+    }
+    // save users to csv
+    public void saveUsers() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("users.csv"))) {
+            for (User u : users) {
+                writer.write(u.toCSV());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving users: " + e.getMessage());
+        }
+
+    }
+    //find a book by id
+    public Book findBookById(String id) {
+        for (Book b : books) {
+            if (b.getId().equals(id)) {
+                return b;
+            }
+        }
+        return null;
+    }
+    // find user by username
+    public User findUserByUsername(String username) {
+        for (User u : users) {
+            if (u.getUsername().equals(username)) {
+                return u;
+            }
+        }
+        return null;
+    }
+    //borrow a book
+    public boolean borrowBook(String username, String bookId) {
+        User user = findUserByUsername(username);
+        Book book = findBookById(bookId);
+
+        if (user == null || book == null) {
+            return false;
+        }
+
+        if (book.isBorrowed()) {
+            return false;
+        }
+
+        book.setBorrowed(true);
+        book.setLoanCount(book.getLoanCount() + 1);
+        user.addLoanedBook(bookId);
+
+        saveBooks();
+        saveUsers();
+
+        return true;
+    }
+    //return a book
+    public boolean returnBook(String username, String bookId) {
+        User user = findUserByUsername(username);
+        Book book = findBookById(bookId);
+
+        if (user == null || book == null) {
+            return false;
+        }
+
+        if (!book.isBorrowed()) {
+            return false;
+        }
+
+        book.setBorrowed(false);
+        user.removeLoanedBook(bookId);
+
+        saveBooks();
+        saveUsers();
+
+        return true;
+    }
+
     public List<Book> getBooks() {
         return books;
     }
